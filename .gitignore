@@ -1,0 +1,3 @@
+venv/
+discord_clone/__pycache__/
+*.pyc

@@ -31,7 +31,7 @@ def login_page(request):
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request,'username or password does not exits') 
+            messages.error(request,'email or password does not exits') 
     context = {'page': page}
     return render(request, 'base/login_register.html',context)
 
@@ -89,23 +89,26 @@ def room(request, id):
     participants = room.participants.all()
     
     if request.method == 'POST':
-        message = Message.objects.create(
-            user=request.user,
-            room=room,
-            body=request.POST.get('body')
-        )
-        
-        room.participants.add(request.user)
-        
-        return redirect('room', id=room.id)
+        if request.user.is_authenticated:
+            message = Message.objects.create(
+                user=request.user,
+                room=room,
+                body=request.POST.get('body')
+            )
+            
+            room.participants.add(request.user)
+            
+            return redirect('room', id=room.id)
+        else:
+            messages.error(request, 'You must be logged in to send a message.')
+            return redirect('login')
     
     context = {
         'room': room,
         'room_messages': room_messages,
         'participants': participants,
     }
-    return render(request, 'base/room.html',context)
-
+    return render(request, 'base/room.html', context)
 
 def user_profile(request,id):
     user = User.objects.get(id=id)
@@ -139,8 +142,8 @@ def create_room(request):
         )
 
         return redirect('home')
-    
     context = {
+    
         'form': form,
         'topics': topics,
     }
